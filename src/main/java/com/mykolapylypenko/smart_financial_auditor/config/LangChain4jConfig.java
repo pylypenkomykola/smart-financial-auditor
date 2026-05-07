@@ -1,5 +1,8 @@
 package com.mykolapylypenko.smart_financial_auditor.config;
 
+import com.mykolapylypenko.smart_financial_auditor.audit.ai.BankingAuditorAi;
+import dev.langchain4j.data.document.DocumentSplitter;
+import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatLanguageModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -8,10 +11,9 @@ import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
 import dev.langchain4j.rag.content.retriever.EmbeddingStoreContentRetriever;
+import dev.langchain4j.service.AiServices;
 import dev.langchain4j.store.embedding.EmbeddingStore;
 import dev.langchain4j.store.embedding.pgvector.PgVectorEmbeddingStore;
-import dev.langchain4j.data.document.DocumentSplitter;
-import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
@@ -112,5 +114,20 @@ public class LangChain4jConfig {
     @Bean
     public DocumentSplitter documentSplitter() {
         return DocumentSplitters.recursive(1000, 200);
+    }
+
+    // ─── BankingAuditorAi (LangChain4j AiService) ───────────────────────────
+    // Wires the RAG retriever into the AI service proxy.
+    // ContentRetriever automatically appends the top-3 relevant chunks to
+    // every user message before sending to the LLM.
+
+    @Bean
+    public BankingAuditorAi bankingAuditorAi(
+            ChatLanguageModel chatLanguageModel,
+            ContentRetriever contentRetriever) {
+        return AiServices.builder(BankingAuditorAi.class)
+                .chatLanguageModel(chatLanguageModel)
+                .contentRetriever(contentRetriever)
+                .build();
     }
 }
