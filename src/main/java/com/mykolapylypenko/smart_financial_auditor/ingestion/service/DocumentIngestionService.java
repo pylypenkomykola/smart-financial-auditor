@@ -2,9 +2,9 @@ package com.mykolapylypenko.smart_financial_auditor.ingestion.service;
 
 import com.mykolapylypenko.smart_financial_auditor.ingestion.dto.IngestionResponse;
 import dev.langchain4j.data.document.Document;
+import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.DocumentSplitter;
 import dev.langchain4j.data.document.Metadata;
-import dev.langchain4j.data.document.parser.apache.pdfbox.ApachePdfBoxDocumentParser;
 import dev.langchain4j.data.embedding.Embedding;
 import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.embedding.EmbeddingModel;
@@ -31,16 +31,19 @@ public class DocumentIngestionService {
     private final EmbeddingModel openAiEmbeddingModel;
     private final DocumentSplitter documentSplitter;
     private final VectorStore springAiVectorStore;
+    private final DocumentParser documentParser;
 
     public DocumentIngestionService(
             EmbeddingStore<TextSegment> langChain4jEmbeddingStore,
             EmbeddingModel openAiEmbeddingModel,
             DocumentSplitter documentSplitter,
-            VectorStore springAiVectorStore) {
+            VectorStore springAiVectorStore,
+            DocumentParser documentParser) {
         this.langChain4jEmbeddingStore = langChain4jEmbeddingStore;
         this.openAiEmbeddingModel = openAiEmbeddingModel;
         this.documentSplitter = documentSplitter;
         this.springAiVectorStore = springAiVectorStore;
+        this.documentParser = documentParser;
     }
 
     public IngestionResponse ingestDocument(MultipartFile file) {
@@ -49,8 +52,7 @@ public class DocumentIngestionService {
 
         try {
             // Step A.1 — Load PDF
-            Document lc4jDocument = new ApachePdfBoxDocumentParser()
-                    .parse(file.getInputStream());
+            Document lc4jDocument = documentParser.parse(file.getInputStream());
             lc4jDocument.metadata().put("filename", filename);
             lc4jDocument.metadata().put("ingested_at", LocalDateTime.now().toString());
 
@@ -73,7 +75,7 @@ public class DocumentIngestionService {
                     "Document ingested into both LangChain4j and Spring AI vector stores",
                     LocalDateTime.now());
 
-        } catch (IOException e) {
+        } catch (IOException | RuntimeException e) {
             log.error("Failed to parse document: {}", filename, e);
             throw new IllegalArgumentException("Could not parse PDF file: " + e.getMessage(), e);
         }

@@ -34,8 +34,8 @@ class SpringAiChatServiceTest {
         String question = "What is KYC in banking?";
         String aiReply = "KYC (Know Your Customer) is a mandatory process...";
 
-        ChatClient.ChatClientRequest promptRequest = mock(ChatClient.ChatClientRequest.class);
-        ChatClient.ChatClientRequest.CallResponseSpec callSpec = mock(ChatClient.ChatClientRequest.CallResponseSpec.class);
+        ChatClient.ChatClientRequestSpec promptRequest = mock(ChatClient.ChatClientRequestSpec.class);
+        ChatClient.CallResponseSpec callSpec = mock(ChatClient.CallResponseSpec.class);
 
         when(chatClient.prompt()).thenReturn(promptRequest);
         when(promptRequest.user(question)).thenReturn(promptRequest);

@@ -1,10 +1,12 @@
 package com.mykolapylypenko.smart_financial_auditor.config;
 
 import com.mykolapylypenko.smart_financial_auditor.audit.ai.BankingAuditorAi;
+import dev.langchain4j.data.document.DocumentParser;
 import dev.langchain4j.data.document.DocumentSplitter;
+import dev.langchain4j.data.document.parser.apache.pdfbox.ApachePdfBoxDocumentParser;
 import dev.langchain4j.data.document.splitter.DocumentSplitters;
 import dev.langchain4j.data.segment.TextSegment;
-import dev.langchain4j.model.chat.ChatLanguageModel;
+import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
@@ -49,7 +51,7 @@ public class LangChain4jConfig {
 
     @Bean
     @ConditionalOnProperty(name = "langchain4j.chat.provider", havingValue = "openai", matchIfMissing = true)
-    public ChatLanguageModel openAiChatLanguageModel() {
+    public ChatModel openAiChatLanguageModel() {
         return OpenAiChatModel.builder()
                 .apiKey(openAiApiKey)
                 .modelName(openAiChatModel)
@@ -59,7 +61,7 @@ public class LangChain4jConfig {
 
     @Bean
     @ConditionalOnProperty(name = "langchain4j.chat.provider", havingValue = "ollama")
-    public ChatLanguageModel ollamaChatLanguageModel() {
+    public ChatModel ollamaChatLanguageModel() {
         return OllamaChatModel.builder()
                 .baseUrl(ollamaBaseUrl)
                 .modelName(ollamaChatModel)
@@ -107,6 +109,13 @@ public class LangChain4jConfig {
                 .build();
     }
 
+    // ─── Document Parser ────────────────────────────────────────────────────
+
+    @Bean
+    public DocumentParser documentParser() {
+        return new ApachePdfBoxDocumentParser();
+    }
+
     // ─── Document Splitter ──────────────────────────────────────────────────
     // Recursive splitter: tries to split on paragraphs, then sentences,
     // then words. 1000 chars per chunk with 200-char overlap for context.
@@ -123,10 +132,10 @@ public class LangChain4jConfig {
 
     @Bean
     public BankingAuditorAi bankingAuditorAi(
-            ChatLanguageModel chatLanguageModel,
+            ChatModel chatLanguageModel,
             ContentRetriever contentRetriever) {
         return AiServices.builder(BankingAuditorAi.class)
-                .chatLanguageModel(chatLanguageModel)
+                .chatModel(chatLanguageModel)
                 .contentRetriever(contentRetriever)
                 .build();
     }

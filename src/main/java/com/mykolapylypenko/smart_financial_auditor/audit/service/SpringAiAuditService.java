@@ -5,9 +5,9 @@ import com.mykolapylypenko.smart_financial_auditor.audit.dto.AuditResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.ai.chat.client.advisor.vectorstore.QuestionAnswerAdvisor;
 import org.springframework.ai.vectorstore.SearchRequest;
 import org.springframework.ai.vectorstore.VectorStore;
-import org.springframework.ai.vectorstore.advisor.QuestionAnswerAdvisor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
