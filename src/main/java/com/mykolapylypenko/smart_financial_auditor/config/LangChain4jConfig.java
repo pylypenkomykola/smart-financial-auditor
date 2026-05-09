@@ -9,6 +9,7 @@ import dev.langchain4j.data.segment.TextSegment;
 import dev.langchain4j.model.chat.ChatModel;
 import dev.langchain4j.model.embedding.EmbeddingModel;
 import dev.langchain4j.model.ollama.OllamaChatModel;
+import dev.langchain4j.model.ollama.OllamaEmbeddingModel;
 import dev.langchain4j.model.openai.OpenAiChatModel;
 import dev.langchain4j.model.openai.OpenAiEmbeddingModel;
 import dev.langchain4j.rag.content.retriever.ContentRetriever;
@@ -44,6 +45,9 @@ public class LangChain4jConfig {
     @Value("${langchain4j.ollama.chat-model:llama3.2}")
     private String ollamaChatModel;
 
+    @Value("${langchain4j.ollama.embedding-model:nomic-embed-text}")
+    private String ollamaEmbeddingModel;
+
     @Value("${langchain4j.embedding.dimension:1536}")
     private int embeddingDimension;
 
@@ -70,14 +74,24 @@ public class LangChain4jConfig {
     }
 
     // ─── Embedding Model ────────────────────────────────────────────────────
-    // Always uses OpenAI embeddings to ensure consistent vector dimensions.
-    // Embedding model must not change after documents are indexed.
+    // Dimensions must stay consistent within each environment — do not switch
+    // models after documents have been indexed into PgVector.
 
-    @Bean
-    public EmbeddingModel langChain4jEmbeddingModel() {
+    @Bean(name = "langChain4jEmbeddingModel")
+    @ConditionalOnProperty(name = "langchain4j.embedding.provider", havingValue = "openai", matchIfMissing = true)
+    public EmbeddingModel langChain4jOpenAiEmbeddingModel() {
         return OpenAiEmbeddingModel.builder()
                 .apiKey(openAiApiKey)
                 .modelName(openAiEmbeddingModel)
+                .build();
+    }
+
+    @Bean(name = "langChain4jEmbeddingModel")
+    @ConditionalOnProperty(name = "langchain4j.embedding.provider", havingValue = "ollama")
+    public EmbeddingModel langChain4jOllamaEmbeddingModel() {
+        return OllamaEmbeddingModel.builder()
+                .baseUrl(ollamaBaseUrl)
+                .modelName(ollamaEmbeddingModel)
                 .build();
     }
 
