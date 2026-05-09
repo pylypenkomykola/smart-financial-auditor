@@ -26,7 +26,7 @@ import javax.sql.DataSource;
 @Configuration
 public class LangChain4jConfig {
 
-    @Value("${langchain4j.openai.api-key}")
+    @Value("${langchain4j.openai.api-key:key}")
     private String openAiApiKey;
 
     @Value("${langchain4j.openai.chat-model:gpt-4o}")
@@ -60,7 +60,7 @@ public class LangChain4jConfig {
     }
 
     @Bean
-    @ConditionalOnProperty(name = "langchain4j.chat.provider", havingValue = "ollama")
+    @ConditionalOnProperty(name = "langchain4j.chat.provider", havingValue = "ollama", matchIfMissing = true)
     public ChatModel ollamaChatLanguageModel() {
         return OllamaChatModel.builder()
                 .baseUrl(ollamaBaseUrl)
