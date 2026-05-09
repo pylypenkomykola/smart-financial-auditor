@@ -47,6 +47,10 @@
 			<artifactId>spring-boot-starter-web</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.ai</groupId>
+			<artifactId>spring-ai-starter-model-openai</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-jdbc</artifactId>
 		</dependency>
@@ -59,15 +63,10 @@
 			<artifactId>spring-boot-starter-actuator</artifactId>
 		</dependency>
 
-		<!-- Spring AI 2.0 - OpenAI and Ollama Chat/Embedding -->
+		<!-- Spring AI 2.0 - PgVector Store (starter includes autoconfiguration) -->
 		<dependency>
 			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-openai</artifactId>
-		</dependency>
-		<!-- Spring AI 2.0 - PgVector Store -->
-		<dependency>
-			<groupId>org.springframework.ai</groupId>
-			<artifactId>spring-ai-pgvector-store</artifactId>
+			<artifactId>spring-ai-starter-vector-store-pgvector</artifactId>
 		</dependency>
 
 		<!-- Spring AI 2.0 - RAG Advisors -->

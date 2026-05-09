@@ -74,7 +74,7 @@ public class LangChain4jConfig {
     // Embedding model must not change after documents are indexed.
 
     @Bean
-    public EmbeddingModel openAiEmbeddingModel() {
+    public EmbeddingModel langChain4jEmbeddingModel() {
         return OpenAiEmbeddingModel.builder()
                 .apiKey(openAiApiKey)
                 .modelName(openAiEmbeddingModel)
@@ -100,10 +100,10 @@ public class LangChain4jConfig {
     @Bean
     public ContentRetriever contentRetriever(
             EmbeddingStore<TextSegment> langChain4jEmbeddingStore,
-            EmbeddingModel openAiEmbeddingModel) {
+            EmbeddingModel langChain4jEmbeddingModel) {
         return EmbeddingStoreContentRetriever.builder()
                 .embeddingStore(langChain4jEmbeddingStore)
-                .embeddingModel(openAiEmbeddingModel)
+                .embeddingModel(langChain4jEmbeddingModel)
                 .maxResults(3)
                 .minScore(0.7)
                 .build();
