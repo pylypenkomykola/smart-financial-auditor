@@ -1,0 +1,85 @@
+{{- if .Values.postgres.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}-postgres
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+    app: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "smart-financial-auditor.selectorLabels" . | nindent 6 }}
+      app: postgres
+  template:
+    metadata:
+      labels:
+        {{- include "smart-financial-auditor.selectorLabels" . | nindent 8 }}
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: {{ .Values.postgres.image }}
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: {{ .Values.postgres.database | quote }}
+            - name: POSTGRES_USER
+              value: {{ .Values.postgres.username | quote }}
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "smart-financial-auditor.fullname" . }}-postgres
+                  key: postgres-password
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+      volumes:
+        - name: postgres-data
+          {{- if .Values.postgres.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "smart-financial-auditor.fullname" . }}-postgres
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}-postgres
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 5432
+  selector:
+    {{- include "smart-financial-auditor.selectorLabels" . | nindent 4 }}
+    app: postgres
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}-postgres
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+type: Opaque
+data:
+  postgres-password: {{ .Values.postgres.password | b64enc | quote }}
+---
+{{- if .Values.postgres.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}-postgres
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.postgres.persistence.size }}
+{{- end -}}
+{{- end -}}

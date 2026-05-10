@@ -19,8 +19,9 @@ target/
 *.iml
 *.ipr
 
-### Claude ###
+### AI ###
 .claude
+.junie
 
 ### NetBeans ###
 /nbproject/private/

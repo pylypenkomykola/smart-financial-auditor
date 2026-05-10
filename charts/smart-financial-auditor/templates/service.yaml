@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "smart-financial-auditor.selectorLabels" . | nindent 4 }}

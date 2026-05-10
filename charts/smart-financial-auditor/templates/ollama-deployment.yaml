@@ -1,0 +1,92 @@
+{{- if .Values.ollama.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}-ollama
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+    app: ollama
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "smart-financial-auditor.selectorLabels" . | nindent 6 }}
+      app: ollama
+  template:
+    metadata:
+      labels:
+        {{- include "smart-financial-auditor.selectorLabels" . | nindent 8 }}
+        app: ollama
+    spec:
+      {{- if .Values.ollama.models }}
+      initContainers:
+        - name: pull-models
+          image: {{ .Values.ollama.image }}
+          command:
+            - /bin/sh
+            - -c
+            - |
+              ollama serve &
+              sleep 5
+              {{- range .Values.ollama.models }}
+              echo "Pulling model {{ . }}..."
+              ollama pull {{ . }}
+              {{- end }}
+              pkill ollama
+          volumeMounts:
+            - name: ollama-data
+              mountPath: /root/.ollama
+      {{- end }}
+      containers:
+        - name: ollama
+          image: {{ .Values.ollama.image }}
+          ports:
+            - containerPort: 11434
+          env:
+            - name: OLLAMA_KEEP_ALIVE
+              value: {{ .Values.ollama.keepAlive | quote }}
+          volumeMounts:
+            - name: ollama-data
+              mountPath: /root/.ollama
+          {{- if .Values.ollama.gpu.enabled }}
+          resources:
+            limits:
+              nvidia.com/gpu: 1
+          {{- end }}
+      volumes:
+        - name: ollama-data
+          {{- if .Values.ollama.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "smart-financial-auditor.fullname" . }}-ollama
+          {{- else }}
+          emptyDir: {}
+          {{- end }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}-ollama
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+spec:
+  ports:
+    - port: 11434
+  selector:
+    {{- include "smart-financial-auditor.selectorLabels" . | nindent 4 }}
+    app: ollama
+---
+{{- if .Values.ollama.persistence.enabled -}}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}-ollama
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.ollama.persistence.size }}
+{{- end -}}
+{{- end -}}

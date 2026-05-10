@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "smart-financial-auditor.fullname" . }}
+  labels:
+    {{- include "smart-financial-auditor.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "smart-financial-auditor.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "smart-financial-auditor.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: {{ .Values.env.spring_profiles_active | quote }}
+            - name: DATASOURCE_URL
+              value: {{ if .Values.postgres.enabled }}"jdbc:postgresql://{{ include "smart-financial-auditor.fullname" . }}-postgres:5432/{{ .Values.postgres.database }}"{{ else }}{{ .Values.env.external_datasource_url | quote }}{{ end }}
+            - name: DATASOURCE_USERNAME
+              value: {{ .Values.postgres.username | quote }}
+            - name: DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "smart-financial-auditor.fullname" . }}-postgres
+                  key: postgres-password
+            - name: OLLAMA_BASE_URL
+              value: {{ if .Values.ollama.enabled }}"http://{{ include "smart-financial-auditor.fullname" . }}-ollama:11434"{{ else }}{{ .Values.env.external_ollama_url | quote }}{{ end }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
