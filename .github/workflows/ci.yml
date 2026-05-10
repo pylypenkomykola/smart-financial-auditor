@@ -43,7 +43,9 @@ jobs:
           cache: maven
 
       - name: Build and run tests
-        run: ./mvnw verify --no-transfer-progress
+        run: |
+          chmod +x mvnw
+          ./mvnw verify --no-transfer-progress
         env:
           DATASOURCE_URL: jdbc:postgresql://localhost:5432/financial_auditor_test
           DATASOURCE_USERNAME: postgres

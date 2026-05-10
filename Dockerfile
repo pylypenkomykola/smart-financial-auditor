@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
-RUN ./mvnw dependency:resolve --no-transfer-progress -q
+RUN chmod +x mvnw && ./mvnw dependency:resolve --no-transfer-progress -q
 
 COPY src/ src/
 RUN ./mvnw package -DskipTests --no-transfer-progress -q

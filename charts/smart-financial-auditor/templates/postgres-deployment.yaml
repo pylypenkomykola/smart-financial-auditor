@@ -67,8 +67,8 @@ metadata:
 type: Opaque
 data:
   postgres-password: {{ .Values.postgres.password | b64enc | quote }}
+{{- if .Values.postgres.persistence.enabled }}
 ---
-{{- if .Values.postgres.persistence.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -81,5 +81,5 @@ spec:
   resources:
     requests:
       storage: {{ .Values.postgres.persistence.size }}
-{{- end -}}
-{{- end -}}
+{{- end }}
+{{- end }}

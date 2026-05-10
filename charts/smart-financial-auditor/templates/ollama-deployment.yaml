@@ -74,8 +74,8 @@ spec:
   selector:
     {{- include "smart-financial-auditor.selectorLabels" . | nindent 4 }}
     app: ollama
+{{- if .Values.ollama.persistence.enabled }}
 ---
-{{- if .Values.ollama.persistence.enabled -}}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -88,5 +88,5 @@ spec:
   resources:
     requests:
       storage: {{ .Values.ollama.persistence.size }}
-{{- end -}}
-{{- end -}}
+{{- end }}
+{{- end }}
